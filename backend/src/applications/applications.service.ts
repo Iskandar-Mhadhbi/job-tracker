@@ -32,12 +32,14 @@ export class ApplicationsService {
     const app = this.repo.create({ ...dto, userId });
     return this.repo.save(app);
   }
-
+ 
   async update(id: string, dto: UpdateApplicationDto, userId: string): Promise<Application> {
-    const app = await this.findOne(id, userId);
-    Object.assign(app, dto);
-    return this.repo.save(app);
-  }
+  const app = await this.findOne(id, userId);
+  Object.assign(app, Object.fromEntries(
+    Object.entries(dto).filter(([, v]) => v !== undefined && v !== null)
+  ));
+  return this.repo.save(app);
+}
 
   async remove(id: string, userId: string): Promise<void> {
     const app = await this.findOne(id, userId);
