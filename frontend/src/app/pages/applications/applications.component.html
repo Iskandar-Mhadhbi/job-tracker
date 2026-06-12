@@ -1,0 +1,125 @@
+<div class="applications-page">
+  <header class="header">
+    <div class="header-content">
+      <h1>Job Tracker</h1>
+      <div class="header-actions">
+        <a routerLink="/dashboard">Dashboard</a>
+        <button class="btn-primary" (click)="openForm()">+ Add Application</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="toolbar">
+      <h2>Applications</h2>
+      <select name="filterStatus" [(ngModel)]="filterStatus" (change)="onFilterChange()">
+        <option value="">All Statuses</option>
+        @for (s of statusOptions; track s) {
+          <option [value]="s">{{ statusLabels[s] }}</option>
+        }
+      </select>
+    </div>
+
+    @if (applications$ | async; as applications) {
+      @if (applications.length === 0) {
+        <div class="empty">
+          <p>No applications yet.</p>
+          <button class="btn-primary" (click)="openForm()">Add your first application</button>
+        </div>
+      }
+
+      @if (applications.length > 0) {
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Applied Date</th>
+                <th>Location</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (app of applications; track app.id) {
+                <tr>
+                  <td><strong>{{ app.company_name }}</strong></td>
+                  <td>{{ app.role_title }}</td>
+                  <td>
+                    <span class="badge" [style.background]="getStatusColor(app.status)">
+                      {{ statusLabels[app.status] }}
+                    </span>
+                  </td>
+                  <td>{{ app.applied_date }}</td>
+                  <td>{{ app.location ?? '—' }}</td>
+                  <td class="actions">
+                    <button class="btn-edit" (click)="openForm(app)">Edit</button>
+                    <button class="btn-delete" (click)="delete(app.id)">Delete</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </main>
+</div>
+
+@if (showForm) {
+  <div class="modal-overlay" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ editingId ? 'Edit Application' : 'New Application' }}</h3>
+
+      <form (ngSubmit)="submit()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Company *</label>
+            <input type="text" [(ngModel)]="form.company_name" name="company_name" required />
+          </div>
+          <div class="form-group">
+            <label>Role *</label>
+            <input type="text" [(ngModel)]="form.role_title" name="role_title" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select [(ngModel)]="form.status" name="status">
+              @for (s of statusOptions; track s) {
+                <option [value]="s">{{ statusLabels[s] }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Applied Date *</label>
+            <input type="date" [(ngModel)]="form.applied_date" name="applied_date" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" [(ngModel)]="form.location" name="location" />
+          </div>
+          <div class="form-group">
+            <label>Job URL</label>
+            <input type="url" [(ngModel)]="form.job_url" name="job_url" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea [(ngModel)]="form.notes" name="notes" rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary">{{ editingId ? 'Update' : 'Create' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

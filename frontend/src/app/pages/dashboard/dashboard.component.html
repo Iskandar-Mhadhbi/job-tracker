@@ -1,0 +1,44 @@
+<div class="dashboard">
+  <header class="header">
+    <div class="header-content">
+      <h1>Job Tracker</h1>
+      <div class="header-actions">
+        <span>Hi, {{ userName }}</span>
+        <button (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <h2>Dashboard</h2>
+
+    @if (stats$ | async; as stats) {
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <span class="stat-number">{{ stats.total }}</span>
+          <span class="stat-label">Total Applications</span>
+        </div>
+        <div class="stat-card applied">
+          <span class="stat-number">{{ stats.applied }}</span>
+          <span class="stat-label">Applied</span>
+        </div>
+        <div class="stat-card interview">
+          <span class="stat-number">{{ stats.interview }}</span>
+          <span class="stat-label">Interviews</span>
+        </div>
+        <div class="stat-card offer">
+          <span class="stat-number">{{ stats.offer }}</span>
+          <span class="stat-label">Offers</span>
+        </div>
+        <div class="stat-card rejected">
+          <span class="stat-number">{{ stats.rejected }}</span>
+          <span class="stat-label">Rejected</span>
+        </div>
+      </div>
+    }
+
+    <div class="actions">
+      <a routerLink="/applications" class="btn-primary">View All Applications</a>
+    </div>
+  </main>
+</div>
