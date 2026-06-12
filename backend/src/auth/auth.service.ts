@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -33,7 +34,7 @@ export class AuthService {
     const token = this.jwtService.sign({ sub: user.id, email: user.email });
     return {
       access_token: token,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, email: user.email, name: user.name ?? ''},
     };
   }
 
@@ -47,12 +48,12 @@ export class AuthService {
     const token = this.jwtService.sign({ sub: user.id, email: user.email });
     return {
       access_token: token,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, email: user.email, name: user.name ?? '' },
     };
-  }
+  } 
 
-  async getProfile(userId: string) {
-  return this.userRepo.findOne({
+  async getProfile(userId: string): Promise<User> {
+    const user = await this.userRepo.findOne({
     where: { id: userId },
     select: {
       id: true,
@@ -60,6 +61,8 @@ export class AuthService {
       name: true,
       created_at: true,
     },
-  });
-}
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
 }

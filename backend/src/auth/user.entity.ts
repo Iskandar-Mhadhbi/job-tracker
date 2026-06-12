@@ -18,7 +18,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true ,default: '' })
   name: string;
 
   @OneToMany(() => Application, (app) => app.user)

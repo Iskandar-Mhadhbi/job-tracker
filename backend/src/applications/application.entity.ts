@@ -37,17 +37,17 @@ export class Application {
   @Column({ type: 'date' })
   applied_date: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, default: '' })
   notes: string;
 
-  @Column({ type: 'date', nullable: true })
-  follow_up_date: string;
-
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: '' })
   job_url: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: '' })
   location: string;
+
+  @Column({ type: 'date', nullable: true, default: null })
+  follow_up_date: string;
 
   @CreateDateColumn()
   created_at: Date;

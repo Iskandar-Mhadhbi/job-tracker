@@ -34,19 +34,19 @@ export class ApplicationsService {
   }
  
   async update(id: string, dto: UpdateApplicationDto, userId: string): Promise<Application> {
-  const app = await this.findOne(id, userId);
-  Object.assign(app, Object.fromEntries(
-    Object.entries(dto).filter(([, v]) => v !== undefined && v !== null)
-  ));
-  return this.repo.save(app);
-}
+    const app = await this.findOne(id, userId);
+    Object.assign(app, Object.fromEntries(
+      Object.entries(dto).filter(([, v]) => v !== undefined && v !== null)
+    ));
+    return this.repo.save(app);
+  }
 
   async remove(id: string, userId: string): Promise<void> {
     const app = await this.findOne(id, userId);
     await this.repo.remove(app);
   }
 
-  async getStats(userId: string) {
+  async getStats(userId: string):Promise<{ total: number; applied: number; interview: number; offer: number; rejected: number }> {
     const all = await this.repo.find({ where: { userId } });
     return {
       total: all.length,
