@@ -8,6 +8,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Ensures all actions run with Node.js 24 for consistency
   REPO_OWNER: iskandar-mhadhbi
+  
 jobs:
   # ─── JOB 1: Run tests and generate coverage report ───────────────────────────
   test:
