@@ -7,6 +7,7 @@ on:
     branches: [main]
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Ensures all actions run with Node.js 24 for consistency
+  REPO_OWNER: iskandar-mhadhbi
 jobs:
   # ─── JOB 1: Run tests and generate coverage report ───────────────────────────
   test:
@@ -91,7 +92,7 @@ jobs:
         with:
           context: ./backend
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/${{ github.repository_owner }}/job-tracker/backend:latest
+          tags: ghcr.io/iskandar-mhadhbi/job-tracker/backend:latest
 
   # ─── JOB 3: Build and push frontend Docker image ──────────────────────────────
   build-frontend:
@@ -117,4 +118,4 @@ jobs:
         with:
           context: ./frontend
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/${{ github.repository_owner }}/job-tracker/frontend:latest
+          tags: ghcr.io/iskandar-mhadhbi/job-tracker/frontend:latest
