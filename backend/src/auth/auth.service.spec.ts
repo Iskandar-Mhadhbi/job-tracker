@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from './user.entity';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('hashedpassword'),
@@ -39,6 +40,22 @@ describe('AuthService', () => {
         AuthService,
         { provide: getRepositoryToken(User), useValue: mockUserRepo },
         { provide: JwtService, useValue: mockJwtService },
+        {provide: ConfigService,useValue: {
+          get: jest.fn().mockImplementation((key: string) => {
+            const config: Record<string, string> = { JWT_SECRET: 'test-secret',
+              BCRYPT_ROUNDS: '10',
+              DB_HOST: 'localhost',
+              DB_PORT: '5432',
+              DB_USER: 'admin',
+              DB_PASS: 'password',
+              DB_NAME: 'jobtracker_test',
+              NODE_ENV: 'test',
+              PORT: '3000',
+              FRONTEND_URL: 'http://localhost:4200',
+              JWT_EXPIRES_IN: '7d', };
+            return config[key];}),
+          }
+        }
       ],
     }).compile();
 
