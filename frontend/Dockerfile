@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build -- --configuration=production
+RUN node --max-old-space-size=4096 node_modules/@angular/cli/bin/ng build --configuration=production
 
 # Production stage - serve with nginx
 FROM nginx:alpine AS production
