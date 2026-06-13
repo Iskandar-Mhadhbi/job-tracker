@@ -7,6 +7,7 @@ import { User } from './auth/user.entity';
 import { Application } from './applications/application.entity';
 import { getAppConfig } from './config/app.config';
 import { MetricsModule } from './metrics/metrics.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MetricsModule } from './metrics/metrics.module';
     AuthModule,
     ApplicationsModule,
     MetricsModule,
+    AiModule,
   ],
 })
 export class AppModule {}

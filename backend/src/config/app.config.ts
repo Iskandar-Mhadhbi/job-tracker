@@ -26,4 +26,7 @@ export const getAppConfig = (configService: ConfigService) => ({
     password: required(configService, 'DB_PASS'),
     database: required(configService, 'DB_NAME'),
   },
+  gemini: {
+    apiKey: required(configService, 'GEMINI_API_KEY'),
+  },
 });
