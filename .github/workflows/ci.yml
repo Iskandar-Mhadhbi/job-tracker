@@ -59,6 +59,7 @@ jobs:
           DB_NAME: jobtracker_test
           JWT_SECRET: test-secret  # Non-sensitive, only used in ephemeral test DB
           NODE_ENV: test
+          GEMINI_API_KEY: test-gemini-key
 
       # Upload the HTML coverage report as a downloadable artifact
       # Available for 7 days after each run under Actions > Artifacts

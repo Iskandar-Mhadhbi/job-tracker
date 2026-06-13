@@ -52,6 +52,7 @@ describe('AuthService', () => {
               NODE_ENV: 'test',
               PORT: '3000',
               FRONTEND_URL: 'http://localhost:4200',
+              GEMINI_API_KEY: 'test-gemini-key',
               JWT_EXPIRES_IN: '7d', };
             return config[key];}),
           }
