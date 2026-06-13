@@ -25,6 +25,12 @@ export const routes: Routes = [
       import('./pages/applications/applications.component').then((m) => m.ApplicationsComponent),
   },
   {
+    path: 'ai-analysis',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/ai-analysis/ai-analysis.component').then((m) => m.AiAnalysisComponent),
+  },
+  {
     path: '**',
     redirectTo: 'dashboard',
   },

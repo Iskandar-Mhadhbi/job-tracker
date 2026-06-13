@@ -1,0 +1,112 @@
+<div class="ai-page">
+  <header class="header">
+    <div class="header-content">
+      <h1>Job Tracker</h1>
+      <div class="header-actions">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/applications">Applications</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <h2>AI Job Match Analyzer</h2>
+    <p class="subtitle">Upload your CV and paste a job description to get an AI-powered match analysis, cover letter, and interview tips.</p>
+
+    <div class="form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="jobTitle">Job Title *</label>
+          <input id="jobTitle" type="text" [(ngModel)]="jobTitle" name="jobTitle" placeholder="e.g. Software Engineer" />
+        </div>
+        <div class="form-group">
+          <label for="companyName">Company *</label>
+          <input id="companyName" type="text" [(ngModel)]="companyName" name="companyName" placeholder="e.g. Google" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="jobDescriptionText">Job Description *</label>
+        <textarea id="jobDescriptionText" [(ngModel)]="jobDescriptionText" name="jobDescriptionText" rows="6" placeholder="Paste the full job description here..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="cvFile">Your CV (PDF) *</label>
+        <input id="cvFile" type="file" accept=".pdf" (change)="onCvFileChange($event)" />
+      </div>
+
+      @if (error) {
+        <p class="error">{{ error }}</p>
+      }
+
+      <button class="btn-primary" (click)="analyze()" [disabled]="loading">
+        {{ loading ? 'Analyzing...' : 'Analyze Match' }}
+      </button>
+    </div>
+
+    @if (loading) {
+      <div class="loading-card">
+        <div class="spinner"></div>
+        <p>AI is analyzing your application... this may take a few seconds.</p>
+      </div>
+    }
+
+    @if (result$ | async; as result) {
+      <div class="results">
+        <div class="score-card">
+          <div class="score-circle" [style.border-color]="getScoreColor(result.matchScore)">
+            <span class="score-number" [style.color]="getScoreColor(result.matchScore)">{{ result.matchScore }}</span>
+            <span class="score-label">Match Score</span>
+          </div>
+          <p class="score-summary">{{ result.matchSummary }}</p>
+        </div>
+
+        <div class="results-grid">
+          <div class="result-card">
+            <h3>✅ Strengths</h3>
+            <ul>
+              @for (strength of (expandedSections['strengths'] ? result.strengths : result.strengths.slice(0, 3)); track strength) {
+                <li>{{ strength }}</li>
+              }
+            </ul>
+            @if (result.strengths.length > 3) {
+              <button class="btn-expand" (click)="toggleSection('strengths')">
+                {{ expandedSections['strengths'] ? 'Show less' : 'Show ' + (result.strengths.length - 3) + ' more' }}
+              </button>
+            }
+          </div>
+
+          <div class="result-card">
+            <h3>⚠️ Missing Skills</h3>
+            <ul>
+              @for (skill of (expandedSections['missingSkills'] ? result.missingSkills : result.missingSkills.slice(0, 3)); track skill) {
+                <li>{{ skill }}</li>
+              }
+            </ul>
+            @if (result.missingSkills.length > 3) {
+              <button class="btn-expand" (click)="toggleSection('missingSkills')">
+                {{ expandedSections['missingSkills'] ? 'Show less' : 'Show ' + (result.missingSkills.length - 3) + ' more' }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="result-card full-width">
+            <h3>💡 Interview Tips</h3>
+            <p>{{ expandedSections['interviewTips'] ? result.suggestedNotes : result.suggestedNotes.slice(0, 200) + '...' }}</p>
+            <button class="btn-expand" (click)="toggleSection('interviewTips')">
+              {{ expandedSections['interviewTips'] ? 'Show less' : 'Show more' }}
+            </button>
+        </div>
+
+        <div class="result-card full-width">
+          <h3>📝 Cover Letter</h3>
+          <pre>{{ expandedSections['coverLetter'] ? result.coverLetter : result.coverLetter.slice(0, 300) + '...' }}</pre>
+          <button class="btn-expand" (click)="toggleSection('coverLetter')">
+            {{ expandedSections['coverLetter'] ? 'Show less' : 'Show more' }}
+          </button>
+        </div>
+      </div>
+    }
+  </main>
+</div>
