@@ -12,7 +12,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {exclude: ['metrics'],});
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Backend running on http://localhost:3000/api`);

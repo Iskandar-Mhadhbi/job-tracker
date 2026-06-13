@@ -6,6 +6,7 @@ import { ApplicationsModule } from './applications/applications.module';
 import { User } from './auth/user.entity';
 import { Application } from './applications/application.entity';
 import { getAppConfig } from './config/app.config';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { getAppConfig } from './config/app.config';
     }),
     AuthModule,
     ApplicationsModule,
+    MetricsModule,
   ],
 })
 export class AppModule {}
