@@ -37,6 +37,7 @@ A full-stack job application tracker to manage your job search from application 
 - **JWT Authentication** — Secure per-user data with token-based auth
 - **REST API** — Clean, documented endpoints with validation
 - **Monitoring** — Prometheus metrics + Grafana dashboards
+- **AI Job Match Analyzer** — Upload your CV and a job description to get an AI-powered match score, cover letter, missing skills analysis, and interview tips powered by Google Gemini
 
 ---
 
@@ -57,6 +58,9 @@ A full-stack job application tracker to manage your job search from application 
 ### Prometheus Monitoring
 ![Prometheus](screenshots/prometheus.png)
 
+### AI Job Match Analyzer
+![AI Analyzer](screenshots/ai-analyser_1.png)
+![AI Analyzer](screenshots/ai-analyser_2.png)
 ---
 
 ## Architecture
@@ -95,6 +99,7 @@ A full-stack job application tracker to manage your job search from application 
 | Infrastructure | Docker, Docker Compose |
 | CI/CD | GitHub Actions |
 | Testing | Jest (unit tests) |
+| AI | Google Gemini API |
 
 ---
 
@@ -271,6 +276,8 @@ job-tracker/
 - [ ] E2E tests with Playwright
 - [ ] Email notifications for follow-up dates
 - [ ] Export applications to CSV
+- [ ] Save AI analysis results directly as a new application
+- [ ] Support multiple CV formats (DOCX, TXT)
 
 ---
 
