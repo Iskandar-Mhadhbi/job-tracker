@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
@@ -13,7 +13,7 @@ import { environment } from '../../environments/environment';
 export class ApplicationsService {
   private readonly API = `${environment.apiUrl}/applications`;
 
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getAll(status?: ApplicationStatus): Observable<Application[]> {
     let params = new HttpParams();
