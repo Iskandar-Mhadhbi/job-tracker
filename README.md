@@ -11,6 +11,21 @@
 A full-stack job application tracker to manage your job search from application to offer. Built with a production-grade stack including CI/CD, containerization, and real-time monitoring.
 
 ---
+## Table of Contents
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Monitoring](#monitoring)
+- [Project Structure](#project-structure)
+- [Future Improvements](#future-improvements)
+
+---
 
 ## Features
 
@@ -22,6 +37,25 @@ A full-stack job application tracker to manage your job search from application 
 - **JWT Authentication** — Secure per-user data with token-based auth
 - **REST API** — Clean, documented endpoints with validation
 - **Monitoring** — Prometheus metrics + Grafana dashboards
+
+---
+
+## Screenshots
+
+### Login
+![Login](screenshots/login.png)
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Applications
+![Applications](screenshots/applications.png)
+
+### Add Application
+![Add Application](screenshots/add-application.png)
+
+### Prometheus Monitoring
+![Prometheus](screenshots/prometheus.png)
 
 ---
 
