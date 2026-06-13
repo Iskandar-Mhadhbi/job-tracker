@@ -45,7 +45,9 @@ jobs:
       # Install backend dependencies using lockfile (faster, deterministic)
       - name: Install backend dependencies
         run: cd backend && npm ci
-
+        # Lint the backend code — fails if linting errors are found
+      - name: Run backend lint
+        run: cd backend && npm run lint
       # Run Jest with coverage — fails if tests fail
       - name: Run tests with coverage
         run: cd backend && npm run test:cov
@@ -112,7 +114,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      # Install frontend dependencies using lockfile (faster, deterministic)    
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+        # Lint the frontend code — fails if linting errors are found
+      - name: Run frontend lint
+        run: cd frontend && npm run lint
       # Build the Docker image — only push to registry when merging to main
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
