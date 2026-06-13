@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runner
 COPY nginx.conf /etc/nginx/nginx.conf
