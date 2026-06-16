@@ -148,3 +148,6 @@ backend/coverage/
 
 # Docker
 .docker/
+
+# Lambda build artifacts
+infrastructure/lambdas/**/*.zip
