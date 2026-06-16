@@ -3,14 +3,14 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '30s', target: 20 },   // ramp up to 20 users
-    { duration: '1m', target: 50 },    // ramp up to 50 users
-    { duration: '30s', target: 50 },   // stay at 50 users
-    { duration: '30s', target: 0 },    // ramp down
+    { duration: '30s', target: 20 },
+    { duration: '1m', target: 50 },
+    { duration: '30s', target: 50 },
+    { duration: '30s', target: 0 },
   ],
   thresholds: {
-    http_req_duration: ['p(95)<1000'], // 95% under 1 second under stress
-    http_req_failed: ['rate<0.05'],    // less than 5% errors under stress
+    http_req_duration: ['p(95)<1000'],
+    http_req_failed: ['rate<0.05'],
   },
 };
 
@@ -37,17 +37,23 @@ export default function (data) {
     Authorization: `Bearer ${data.token}`,
   };
 
-  // Auth endpoint
-  const loginRes = http.post(
-    `${BASE_URL}/auth/login`,
-    JSON.stringify({ email: 'k6-stress@test.com', password: 'password123' }),
-    { headers: { 'Content-Type': 'application/json' } },
-  );
-  check(loginRes, { 'login responds': (r) => r.status === 200 || r.status === 401 });
-
-  // Applications list
   const listRes = http.get(`${BASE_URL}/applications`, { headers });
   check(listRes, { 'list applications': (r) => r.status === 200 });
+
+  const statsRes = http.get(`${BASE_URL}/applications/stats`, { headers });
+  check(statsRes, { 'get stats': (r) => r.status === 200 });
+
+  const createRes = http.post(
+    `${BASE_URL}/applications`,
+    JSON.stringify({
+      company_name: 'Stress Test Co',
+      role_title: 'Load Test Engineer',
+      applied_date: new Date().toISOString().split('T')[0],
+      status: 'applied',
+    }),
+    { headers },
+  );
+  check(createRes, { 'create application': (r) => r.status === 201 });
 
   sleep(0.5);
 }
