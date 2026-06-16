@@ -141,8 +141,7 @@ jobs:
   smoke-test:
     name: Smoke Test (k6)
     runs-on: ubuntu-latest
-    needs: test  # Only runs if unit tests pass
-
+    needs: [test, build-backend, build-frontend]  # runs after all three
     services:
       postgres:
         image: postgres:15
