@@ -9,7 +9,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![AWS](https://img.shields.io/badge/AWS-LocalStack-orange?logo=amazon-aws)
 
-A full-stack job application tracker to manage your job search from application to offer. Built with a production-grade stack including CI/CD, containerization, and real-time monitoring.
+A full-stack job application tracker to manage your job search from application to offer. Built with a production-grade stack including CI/CD, containerization, real-time monitoring, AI-powered analysis, and an event-driven AWS architecture.
 
 ---
 ## Table of Contents
@@ -37,11 +37,12 @@ A full-stack job application tracker to manage your job search from application 
 - **Follow-up Dates** — Never miss a follow-up
 - **JWT Authentication** — Secure per-user data with token-based auth
 - **REST API** — Clean, documented endpoints with validation
-- **Monitoring** — Prometheus metrics + Grafana dashboards
 - **AI Job Match Analyzer** — Upload your CV and a job description to get an AI-powered match score, cover letter, missing skills analysis, and interview tips powered by Google Gemini
 - **Event-Driven Architecture** — Application status changes trigger AWS EventBridge events, invoking a Lambda function that logs notifications to S3
 - **S3 Document Storage** — CV files uploaded during AI analysis are stored in AWS S3
 - **IAM Security** — Lambda execution role with least-privilege S3 access policy
+- **Monitoring** — Prometheus metrics + Grafana dashboards
+- **Load Testing** — k6 smoke and stress tests integrated into CI/CD pipeline
 
 ---
 
@@ -68,31 +69,41 @@ A full-stack job application tracker to manage your job search from application 
 ---
 
 ## Architecture
+
+```
 ┌─────────────┐     HTTP      ┌─────────────────┐     TypeORM    ┌──────────────┐
-
 │   Angular   │ ────────────► │    NestJS API    │ ─────────────► │  PostgreSQL  │
-
 │  Frontend   │               │   (Port 3000)    │                │  (Port 5432) │
-
 └─────────────┘               └─────────────────┘                └──────────────┘
-
-│
-
-│ /metrics
-
-▼
-
-┌──────────────┐        ┌─────────────┐
-
-│  Prometheus  │ ──────► │   Grafana   │
-
-│  (Port 9090) │         │ (Port 3001) │
-
-└──────────────┘         └─────────────┘
+                                       │
+                          ┌────────────┴────────────┐
+                          │ /metrics                 │ Status Change
+                          ▼                          ▼
+                  ┌──────────────┐         ┌─────────────────┐
+                  │  Prometheus  │         │   EventBridge   │
+                  │  (Port 9090) │         │   (LocalStack)  │
+                  └──────┬───────┘         └────────┬────────┘
+                         │                          │
+                         ▼                          ▼
+                  ┌─────────────┐         ┌─────────────────┐
+                  │   Grafana   │         │     Lambda      │
+                  │ (Port 3001) │         │ status-handler  │
+                  └─────────────┘         └────────┬────────┘
+                                                   │
+                                                   ▼
+                                          ┌─────────────────┐
+                                          │    S3 Bucket    │
+                                          │ job-tracker-cvs │
+                                          └─────────────────┘
+```
 ## AWS Architecture (via LocalStack)
 
 The app implements an event-driven architecture using AWS services, emulated locally via LocalStack:
 
+```
+Status Change → EventBridge → Lambda → S3 Notification
+CV Upload     → S3 Storage
+```
 | Resource | Type | Purpose |
 |----------|------|---------|
 | `job-tracker-cvs` | S3 Bucket | Stores uploaded CVs and Lambda notifications |
@@ -110,12 +121,12 @@ Infrastructure is provisioned automatically via `infrastructure/localstack/init/
 | Frontend | Angular 22, RxJS, SCSS |
 | Backend | NestJS 11, TypeORM, Passport JWT |
 | Database | PostgreSQL 15 |
-| Monitoring | Prometheus, Grafana |
-| Infrastructure | Docker, Docker Compose |
-| CI/CD | GitHub Actions |
-| Testing | Jest (unit tests) |
 | AI | Google Gemini API |
 | AWS (LocalStack) | S3, EventBridge, Lambda, IAM |
+| Monitoring | Prometheus, Grafana |
+| Infrastructure | Docker, Docker Compose |
+| CI/CD | GitHub Actions, GitHub Container Registry |
+| Testing | Jest (unit tests, 23 passing), k6 (smoke & stress tests) |
 
 ---
 
@@ -157,6 +168,8 @@ docker-compose up -d
 | LocalStack | http://localhost:4566 |
 | LocalStack Dashboard | https://app.localstack.cloud |
 
+Grafana default credentials: `admin` / `admin`
+
 ### Option B — Local Development
 
 **Start infrastructure only:**
@@ -197,6 +210,16 @@ ng serve
 | PATCH | `/api/applications/:id` | Update application | ✅ |
 | DELETE | `/api/applications/:id` | Delete application | ✅ |
 
+### AI
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/ai/analyze` | Analyze CV against job description | ✅ |
+
+### AWS
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/aws/notifications` | List Lambda-processed notifications from S3 | ✅ |
+
 ### Monitoring
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -218,18 +241,43 @@ npm run test:cov
 
 Coverage report generated at `backend/coverage/lcov-report/index.html`
 
-**Test suites:** 2 | **Tests:** 15 | **Coverage:** Services 96-100%
+**Test suites:** 4 | **Tests:** 23 passing | **Coverage:** Services 96-100% 
+
+### Load Testing with k6
+
+```bash
+# Smoke test (light load — 5 VUs, 30s)
+k6 run k6/smoke-test.js
+
+# Stress test (heavy load — ramp to 50 VUs over 2.5 minutes)
+k6 run k6/stress-test.js
+```
 
 ---
 
 ## CI/CD Pipeline
 
-Every push to `develop` or `main` triggers:
+Every push to `develop` or `main` triggers a 5-stage pipeline:
 
-1. **Tests & Coverage** — Jest unit tests with HTML coverage report uploaded as artifact
-2. **Build Backend Image** — Docker image built, pushed to GHCR on merge to `main`
-3. **Build Frontend Image** — Docker image built, pushed to GHCR on merge to `main`
+```
+Tests & Coverage
+      │
+      ├── Build Backend Image ──┐
+      │                        ├── Smoke Test ── Stress Test (main only)
+      └── Build Frontend Image ─┘
+```
 
+| Job | Trigger | Description |
+|-----|---------|-------------|
+| Tests & Coverage | Every push | Jest unit tests + HTML coverage report artifact |
+| Build Backend | After tests pass | Docker image built, pushed to GHCR on `main` |
+| Build Frontend | After tests pass | Docker image built, pushed to GHCR on `main` |
+| Smoke Test | After builds | k6 smoke test — 5 VUs, 30s, p95 < 500ms |
+| Stress Test | `main` only | k6 stress test — ramp to 50 VUs, p95 < 1000ms |
+
+Docker images published to GitHub Container Registry:
+- `ghcr.io/iskandar-mhadhbi/job-tracker/backend:latest`
+- `ghcr.io/iskandar-mhadhbi/job-tracker/frontend:latest` 
 ---
 
 ## Monitoring
@@ -250,62 +298,50 @@ To add a dashboard in Grafana:
 
 ## Project Structure
 
+```
 job-tracker/
-
-├── backend/                 # NestJS API
-
+├── backend/                    # NestJS API
 │   └── src/
-
-│       ├── applications/    # Applications CRUD module
-
-│       ├── auth/            # JWT authentication module
-
-│       ├── config/          # Environment configuration
-
-│       ├── metrics/         # Prometheus metrics module
-
+│       ├── applications/       # Applications CRUD module
+│       ├── auth/               # JWT authentication module
+│       ├── aws/                # S3 and EventBridge services
+│       ├── ai/                 # Gemini AI analysis module
+│       ├── config/             # Environment configuration
+│       ├── metrics/            # Prometheus metrics module
 │       └── main.ts
-
-├── frontend/                # Angular SPA
-
+├── frontend/                   # Angular SPA
 │   └── src/app/
-
-│       ├── pages/           # Dashboard, Applications, Login
-
-│       ├── services/        # HTTP services
-
-│       ├── guards/          # Auth guard
-
-│       └── models/          # TypeScript interfaces
-
-├── monitoring/
-
-│   └── prometheus.yml       # Prometheus scrape config
-
-├── .github/workflows/       # CI/CD pipeline
-
+│       ├── pages/              # Dashboard, Applications, Login, AI Analyzer
+│       ├── services/           # HTTP services
+│       ├── guards/             # Auth guard
+│       └── models/             # TypeScript interfaces
 ├── infrastructure/
-│   ├── localstack/init/    # AWS resource provisioning scripts
-│   └── lambdas/            # Lambda function code
-
-└── docker-compose.yml       # Full stack orchestration
+│   ├── localstack/init/        # AWS resource provisioning scripts
+│   └── lambdas/                # Lambda function code
+├── k6/                         # Load test scripts
+│   ├── smoke-test.js           # Light load test (CI on every push)
+│   └── stress-test.js          # Heavy load test (CI on main only)
+├── monitoring/
+│   └── prometheus.yml          # Prometheus scrape config
+├── .github/workflows/          # CI/CD pipeline
+└── docker-compose.yml          # Full stack orchestration
+```
 
 ---
 
 ## Future Improvements
 
 - [ ] Deploy to Railway/Render with full CD pipeline
+- [ ] Deploy to real AWS (S3, EventBridge, Lambda, RDS Aurora)
 - [ ] API versioning (`/api/v1/`)
 - [ ] Semantic versioning with conventional commits
-- [ ] Build artifacts published to GitHub Container Registry on release
 - [ ] E2E tests with Playwright
+- [ ] CloudWatch logging and alerting
+- [ ] WebSocket notifications when Lambda processes status changes
 - [ ] Email notifications for follow-up dates
 - [ ] Export applications to CSV
 - [ ] Save AI analysis results directly as a new application
 - [ ] Support multiple CV formats (DOCX, TXT)
-- [ ] Deploy to real AWS (S3, EventBridge, Lambda, RDS Aurora)
-- [ ] CloudWatch logging and alerting
-- [ ] WebSocket notifications when Lambda processes status changes
 
 ---
 
