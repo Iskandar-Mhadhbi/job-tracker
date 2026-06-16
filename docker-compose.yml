@@ -18,6 +18,25 @@ services:
       timeout: 5s
       retries: 5
 
+  localstack:
+    container_name: job-tracker-aws
+    image: localstack/localstack:latest
+    restart: unless-stopped
+    ports:
+      - "4566:4566"
+    environment: 
+      DEBUG: 1
+      AWS_DEFAULT_REGION: us-east-1
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
+      LAMBDA_DOCKER_FLAGS: "-e AWS_ENDPOINT_URL=http://localstack:4566"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./infrastructure/localstack/init:/etc/localstack/init/ready.d
+      - ./infrastructure/lambdas:/lambdas
+      - localstack_data:/var/lib/localstack
+    networks:
+      - app-network    
+
   backend:
     build: ./backend
     restart: unless-stopped
@@ -25,18 +44,16 @@ services:
       - "3000:3000"
     networks:
       - app-network
+    env_file:
+      - ./backend/.env
     environment:
       DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: admin
-      DB_PASS: password
-      DB_NAME: jobtracker
-      JWT_SECRET: change-me-in-production
-      NODE_ENV: production
-      FRONTEND_URL: http://localhost:4200
+      AWS_ENDPOINT_URL: http://localstack:4566
     depends_on:
       postgres:
         condition: service_healthy
+      localstack:
+        condition: service_started  
 
   frontend:
     build: ./frontend
@@ -81,3 +98,4 @@ networks:
 volumes:
   postgres_data:
   grafana_data:
+  localstack_data:

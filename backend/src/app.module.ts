@@ -8,6 +8,7 @@ import { Application } from './applications/application.entity';
 import { getAppConfig } from './config/app.config';
 import { MetricsModule } from './metrics/metrics.module';
 import { AiModule } from './ai/ai.module';
+import { AwsModule } from './aws/aws.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AiModule } from './ai/ai.module';
     ApplicationsModule,
     MetricsModule,
     AiModule,
+    AwsModule
   ],
 })
 export class AppModule {}

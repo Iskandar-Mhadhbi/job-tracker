@@ -29,4 +29,11 @@ export const getAppConfig = (configService: ConfigService) => ({
   gemini: {
     apiKey: required(configService, 'GEMINI_API_KEY'),
   },
+  aws: {
+  endpointUrl: required(configService, 'AWS_ENDPOINT_URL'),
+  region: required(configService, 'AWS_REGION'),
+  accessKeyId: required(configService, 'AWS_ACCESS_KEY_ID'),
+  secretAccessKey: required(configService, 'AWS_SECRET_ACCESS_KEY'),
+  s3Bucket: required(configService, 'AWS_S3_BUCKET'),
+},
 });

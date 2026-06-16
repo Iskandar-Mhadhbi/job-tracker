@@ -7,12 +7,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Application, ApplicationStatus } from './application.entity';
 import { CreateApplicationDto, UpdateApplicationDto } from './application.dto';
+import { EventBridgeService } from '../aws/eventbridge.service';
 
 @Injectable()
 export class ApplicationsService {
   constructor(
     @InjectRepository(Application)
     private readonly repo: Repository<Application>,
+    private readonly eventBridgeService: EventBridgeService,
   ) {}
 
   async findAll(userId: string, status?: ApplicationStatus): Promise<Application[]> { 
@@ -35,10 +37,26 @@ export class ApplicationsService {
  
   async update(id: string, dto: UpdateApplicationDto, userId: string): Promise<Application> {
     const app = await this.findOne(id, userId);
-    Object.assign(app, Object.fromEntries(
-      Object.entries(dto).filter(([, v]) => v !== undefined && v !== null)
-    ));
-    return this.repo.save(app);
+    const previousStatus = app.status;
+
+    const updates = Object.fromEntries(Object.entries(dto).filter(([, v]) => v !== undefined),);
+    Object.assign(app, updates);
+
+    const saved = await this.repo.save(app);
+
+    if (dto.status && dto.status !== previousStatus) {
+      try {
+        await this.eventBridgeService.publishStatusChange({
+          applicationId: saved.id,
+          oldStatus: previousStatus,
+          newStatus: saved.status,
+          userId,
+        });
+      } catch (error) {
+        console.error('Failed to publish status change event:', error);
+      }
+    }
+    return saved;
   }
 
   async remove(id: string, userId: string): Promise<void> {
