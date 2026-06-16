@@ -3,6 +3,7 @@ import { ApplicationsService } from './applications.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Application, ApplicationStatus } from './application.entity';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { EventBridgeService } from '../aws/eventbridge.service';
 
 const mockApp: Partial<Application> = {
   id: 'app-uuid-1',
@@ -23,12 +24,16 @@ const mockRepo = {
 
 describe('ApplicationsService', () => {
   let service: ApplicationsService;
+  const mockEventBridgeService = {
+    publishStatusChange: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ApplicationsService,
         { provide: getRepositoryToken(Application), useValue: mockRepo },
+        { provide: EventBridgeService, useValue: mockEventBridgeService },
       ],
     }).compile();
 

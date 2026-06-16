@@ -53,7 +53,12 @@ describe('AuthService', () => {
               PORT: '3000',
               FRONTEND_URL: 'http://localhost:4200',
               GEMINI_API_KEY: 'test-gemini-key',
-              JWT_EXPIRES_IN: '7d', };
+              JWT_EXPIRES_IN: '7d',
+              AWS_ENDPOINT_URL: 'http://localhost:4566',
+              AWS_REGION: 'us-east-1',
+              AWS_ACCESS_KEY_ID: 'test',
+              AWS_SECRET_ACCESS_KEY: 'test',
+              AWS_S3_BUCKET: 'job-tracker-cvs', };
             return config[key];}),
           }
         }

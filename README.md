@@ -7,6 +7,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
 ![License](https://img.shields.io/badge/license-MIT-green)
+![AWS](https://img.shields.io/badge/AWS-LocalStack-orange?logo=amazon-aws)
 
 A full-stack job application tracker to manage your job search from application to offer. Built with a production-grade stack including CI/CD, containerization, and real-time monitoring.
 
@@ -39,7 +40,8 @@ A full-stack job application tracker to manage your job search from application 
 - **Monitoring** — Prometheus metrics + Grafana dashboards
 - **AI Job Match Analyzer** — Upload your CV and a job description to get an AI-powered match score, cover letter, missing skills analysis, and interview tips powered by Google Gemini
 - **Event-Driven Architecture** — Application status changes trigger AWS EventBridge events, invoking a Lambda function that logs notifications to S3
-- **AWS S3** — CV files uploaded during AI analysis are stored in S3
+- **S3 Document Storage** — CV files uploaded during AI analysis are stored in AWS S3
+- **IAM Security** — Lambda execution role with least-privilege S3 access policy
 
 ---
 
@@ -87,7 +89,18 @@ A full-stack job application tracker to manage your job search from application 
 │  (Port 9090) │         │ (Port 3001) │
 
 └──────────────┘         └─────────────┘
+## AWS Architecture (via LocalStack)
 
+The app implements an event-driven architecture using AWS services, emulated locally via LocalStack:
+
+| Resource | Type | Purpose |
+|----------|------|---------|
+| `job-tracker-cvs` | S3 Bucket | Stores uploaded CVs and Lambda notifications |
+| `application-status-changed-rule` | EventBridge Rule | Routes status change events to Lambda |
+| `status-change-handler` | Lambda Function | Processes events, writes notifications to S3 |
+| `lambda-exec-role` | IAM Role | Least-privilege execution role for Lambda |
+
+Infrastructure is provisioned automatically via `infrastructure/localstack/init/01-setup.sh` on LocalStack startup.
 ---
 
 ## Tech Stack
@@ -110,18 +123,26 @@ A full-stack job application tracker to manage your job search from application 
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org) 20+
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- Node.js 20+
+- Docker Desktop
+- LocalStack Auth Token (free at [localstack.cloud](https://localstack.cloud))
 
 ### Option A — Full Docker Setup (recommended)
 
 ```bash
-# Clone the repo
 git clone https://github.com/Iskandar-Mhadhbi/job-tracker.git
 cd job-tracker
 
-# Copy and configure environment
+# Copy and configure environment files
 cp backend/.env.example backend/.env
+cp .env.example .env
+
+# Add your secrets to backend/.env:
+# - JWT_SECRET
+# - GEMINI_API_KEY
+
+# Add your LocalStack token to .env:
+# - LOCALSTACK_AUTH_TOKEN
 
 # Start everything
 docker-compose up -d
@@ -133,10 +154,15 @@ docker-compose up -d
 | Backend API | http://localhost:3000/api |
 | Prometheus | http://localhost:9090 |
 | Grafana | http://localhost:3001 |
-
-Grafana default credentials: `admin` / `admin`
+| LocalStack | http://localhost:4566 |
+| LocalStack Dashboard | https://app.localstack.cloud |
 
 ### Option B — Local Development
+
+**Start infrastructure only:**
+```bash
+docker-compose up postgres localstack -d
+```
 
 **Backend:**
 ```bash
@@ -152,14 +178,6 @@ cd frontend
 npm install
 ng serve
 ```
-
-> Make sure Docker is running for PostgreSQL:
-> ```bash
-> docker-compose up postgres -d
-> ```
-
----
-
 ## API Endpoints
 
 ### Auth

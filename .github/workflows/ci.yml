@@ -60,6 +60,11 @@ jobs:
           JWT_SECRET: test-secret  # Non-sensitive, only used in ephemeral test DB
           NODE_ENV: test
           GEMINI_API_KEY: test-gemini-key
+          AWS_ENDPOINT_URL: http://localhost:4566
+          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_S3_BUCKET: job-tracker-cvs
 
       # Upload the HTML coverage report as a downloadable artifact
       # Available for 7 days after each run under Actions > Artifacts
