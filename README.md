@@ -38,6 +38,8 @@ A full-stack job application tracker to manage your job search from application 
 - **REST API** — Clean, documented endpoints with validation
 - **Monitoring** — Prometheus metrics + Grafana dashboards
 - **AI Job Match Analyzer** — Upload your CV and a job description to get an AI-powered match score, cover letter, missing skills analysis, and interview tips powered by Google Gemini
+- **Event-Driven Architecture** — Application status changes trigger AWS EventBridge events, invoking a Lambda function that logs notifications to S3
+- **AWS S3** — CV files uploaded during AI analysis are stored in S3
 
 ---
 
@@ -100,6 +102,7 @@ A full-stack job application tracker to manage your job search from application 
 | CI/CD | GitHub Actions |
 | Testing | Jest (unit tests) |
 | AI | Google Gemini API |
+| AWS (LocalStack) | S3, EventBridge, Lambda, IAM |
 
 ---
 
@@ -263,6 +266,10 @@ job-tracker/
 
 ├── .github/workflows/       # CI/CD pipeline
 
+├── infrastructure/
+│   ├── localstack/init/    # AWS resource provisioning scripts
+│   └── lambdas/            # Lambda function code
+
 └── docker-compose.yml       # Full stack orchestration
 
 ---
@@ -278,6 +285,9 @@ job-tracker/
 - [ ] Export applications to CSV
 - [ ] Save AI analysis results directly as a new application
 - [ ] Support multiple CV formats (DOCX, TXT)
+- [ ] Deploy to real AWS (S3, EventBridge, Lambda, RDS Aurora)
+- [ ] CloudWatch logging and alerting
+- [ ] WebSocket notifications when Lambda processes status changes
 
 ---
 
